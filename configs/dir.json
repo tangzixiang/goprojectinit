@@ -1,0 +1,5 @@
+[
+  "cmd", "configs","scripts",
+  "internal/apiv1", "internal/config", "internal/handle", "internal/schema", "internal/service", "internal/model",
+  "pkg/middleware", "pkg/model"
+]
