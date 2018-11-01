@@ -1,0 +1,4 @@
+# 项目初始化目录结构
+dir: dir.json
+# 配置文件应该同步保存至 仅支持 yaml
+config_path: configs/project-init.yaml
