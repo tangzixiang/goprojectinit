@@ -19,17 +19,18 @@ type HelpOptions struct {
 }
 
 var (
-	opts       HelpOptions
+	opts HelpOptions
 )
 
 // Parse 开始解析命令行参数
 func Parse() *HelpOptions {
 	parse := parseOptions()
 
-	if parse != nil {
-		Verbose = opts.Verbose
+	if parse == nil {
+		return nil
 	}
 
+	Verbose = opts.Verbose
 	return &opts
 }
 

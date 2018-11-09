@@ -2,5 +2,5 @@
 
 
 
-`go get -u https://github.com/tangzixiang/goprojectinit`
+`go get github.com/tangzixiang/goprojectinit`
 
