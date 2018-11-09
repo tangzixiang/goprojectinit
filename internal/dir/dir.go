@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -17,16 +16,6 @@ import (
 var (
 	DirMode = os.ModeDir | os.ModePerm
 )
-
-// CopyFile 拷贝文件
-func CopyFile(targetFilePath, srcFilePath string) error {
-	return nil
-}
-
-// CopyFileTo 将文件拷贝打目录
-func CopyFileTo(targetDir, filePath string) error {
-	return exec.Command("cp", filePath, targetDir).Run()
-}
 
 // GetProjectPath 获取项目路径，返回的路径为绝对路径
 func GetProjectPath(opts *options.HelpOptions) string {

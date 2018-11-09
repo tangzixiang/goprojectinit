@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -63,4 +64,14 @@ func PathExists(path string) (bool, error) {
 	}
 
 	return false, err
+}
+
+// CopyFile 拷贝文件
+func CopyFile(targetFilePath, srcFilePath string) error {
+	return nil
+}
+
+// CopyFileTo 将文件拷贝打目录
+func CopyFileTo(targetDir, filePath string) error {
+	return exec.Command("cp", filePath, targetDir).Run()
 }

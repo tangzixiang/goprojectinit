@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/tangzixiang/goprojectinit/internal/request"
 	"os"
 	"path/filepath"
 
@@ -38,20 +39,15 @@ func main() {
 		return
 	}
 
-	// 配置文件默认同步指项目下的 configs 目录
+	var err error
 	var configPath string
-	if opts.ConfigPath != nil {
-		configPath = *opts.ConfigPath
-	} else {
-		// 下载配置文件到临时目录
-		// 读取其中的配置项
-		// 复制到 config_path 中
-		// configPath = ""
-		// configPath = `configs/project-init.yaml`
-	}
 
-	configPath, err := PathAbs(configPath)
-	DealErr(err, true)
+	if opts.ConfigPath != nil {
+		configPath, err = PathAbs(*opts.ConfigPath)
+		DealErr(err, true)
+	} else {
+		configPath = request.DownloadFiles() // 下载配置文件到临时目录
+	}
 
 	config.ConfigPath = configPath
 	config.ConfigPathDir = filepath.Dir(configPath)
@@ -62,8 +58,8 @@ func main() {
 	DealErr(os.Chdir(projectPath), true)
 
 	DealErr(os.Mkdir("configs", dir.DirMode), true)
-	dir.CopyFileTo("configs", config.ConfigPath)
-	dir.CopyFileTo("configs", config.ConfigContentDirPath)
+	CopyFileTo("configs", config.ConfigPath)
+	CopyFileTo("configs", config.ConfigContentDirPath)
 
 	//  子目录
 	dir.MakeProjectSubDir(config.Dirs)
