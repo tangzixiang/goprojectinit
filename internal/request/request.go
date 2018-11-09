@@ -25,7 +25,6 @@ func DownloadFiles() string {
 	defer spinStop()
 
 	tempDir := os.TempDir()
-	fmt.Printf("tempDir: %q\n", tempDir)
 
 	configFilePath := filepath.Join(tempDir, filepath.Base(RemoteConfigFileURL))
 	configFile ,err := os.Create(configFilePath)

@@ -1,13 +1,19 @@
 [
+  "bin",
+  "build/package",
+  "build/ci",
   "cmd",
   "configs",
   "scripts",
-  "internal/apiv1",
+  "init",
+  "deplyments",
+  "internal/api",
   "internal/config",
   "internal/handle",
   "internal/schema",
   "internal/service",
   "internal/model",
+  "internal/utils",
   "pkg/middleware",
   "pkg/model"
 ]
