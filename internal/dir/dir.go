@@ -2,80 +2,82 @@ package dir
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/tangzixiang/goprojectinit/internal/options"
-	"github.com/tangzixiang/goprojectinit/pkg/spin"
-	"github.com/tangzixiang/goprojectinit/pkg/utils"
+	. "github.com/tangzixiang/goprojectinit/pkg/utils"
 )
 
+// 权限信息
 var (
-	dirMode = os.ModeDir | os.ModePerm
+	DirMode = os.ModeDir | os.ModePerm
 )
 
 // CopyFile 拷贝文件
-func CopyFile(targetPath, srcPath string) error {
+func CopyFile(targetFilePath, srcFilePath string) error {
 	return nil
 }
 
-// GetProjectPath 获取项目路径
+// CopyFileTo 将文件拷贝打目录
+func CopyFileTo(targetDir, filePath string) error {
+	return exec.Command("cp", filePath, targetDir).Run()
+}
+
+// GetProjectPath 获取项目路径，返回的路径为绝对路径
 func GetProjectPath(opts *options.HelpOptions) string {
 	var projectPath string
 	var err error
 
-	if opts.TargetPath == nil {
+	if opts.TargetPathDir == nil {
 		projectPath, err = os.Getwd()
 	} else {
-		projectPath, err = filepath.Abs(*opts.TargetPath)
+		projectPath, err = filepath.Abs(*opts.TargetPathDir)
+		if err != nil && !os.IsNotExist(err) {
+			DealErr(err, false)
+		}
 	}
 
-	utils.DealErr(err)
+	DealErr(err, false)
 
 	return filepath.Join(projectPath, opts.Args.ProjectName)
 }
 
-// MakeProjectDir 创建项目目录
-func MakeProjectDir(opts *options.HelpOptions, projectPath string) bool {
+// MakeProjectPathDir 创建项目目录,返回是否创建成功
+func MakeProjectPathDir(opts *options.HelpOptions, projectPath string) bool {
 	var err error
-	err = os.Mkdir(projectPath, dirMode)
-	if err == nil {
-		return true
+
+	exist, err := PathExists(projectPath)
+	DealErr(err, false)
+
+	if exist {
+		if !opts.Cover { // 已存在该目录但不需要覆盖
+			DealErr(errors.New(fmt.Sprintf("file or directory %v was exists", projectPath)), false)
+		}
+
+		fmt.Printf("[goprojectinit] are you sure to cover %v directory,type yes or no~\n", projectPath)
+		if !ensureCover() {
+			os.Exit(1)
+			return false
+		}
+
+		// 确认需要重新创建目录
+		DealErr(os.RemoveAll(projectPath), false)
+		Log(fmt.Sprintf("directory %v remove success~", projectPath))
 	}
 
-	// 非目录已存在错误 或则是已存在该目录但不覆盖
-	if !os.IsExist(err) || !opts.Cover {
-		utils.DealErr(err)
-	}
-
-	fmt.Printf("[goprojectinit] are you sure to cover %v directory,type yes or no~\n", projectPath)
-	if !ensureCover() {
-		os.Exit(1)
-		return false
-	}
-
-	// 重新创建目录
-	stop := spin.Start()
-	if err := os.RemoveAll(projectPath); err != nil {
-		utils.DealErr(err)
-	}
-	stop()
-
-	utils.Log(fmt.Sprintf("directory %v remove success~", projectPath))
-
-	err = os.Mkdir(projectPath, dirMode)
-	if err != nil {
-		utils.DealErr(err)
-	}
-
-	utils.Log(fmt.Sprintf("new directory %v success~", projectPath))
+	DealErr(os.MkdirAll(projectPath, DirMode), true)
+	Log(fmt.Sprintf("make new directory %v success~", projectPath))
 
 	return true
 }
 
 func ensureCover() bool {
-	text := getScannerText()
+	text := strings.ToLower(getScannerText())
 	if text != "yes" && text != "y" {
 		return false
 	}
@@ -89,11 +91,14 @@ func getScannerText() string {
 	}
 
 	text := scanner.Text()
-	err := scanner.Err()
-
-	if err != nil {
-		utils.DealErr(err)
-	}
+	DealErr(scanner.Err(), false)
 
 	return text
+}
+
+// MakeProjectSubDir 创建项目子目录
+func MakeProjectSubDir(dirs []string){
+	for _, dir := range dirs {
+		DealErr(os.MkdirAll(dir,DirMode),true)
+	}
 }
