@@ -19,17 +19,29 @@ var (
 )
 
 // DownloadFiles 下载所有远程配置文件
-func DownloadAllFiles() {
+func DownloadAllFiles() error{
+	var spinStop func()
+
 	if !spin.Loading() {
-		spinStop := spin.Start("downloading...")
-		defer spinStop()
+		spinStop = spin.Start("downloading...")
 	}
 
-	DownloadFile(FileNameConfig)
-	DownloadFile(FileNameDir)
-	DownloadFile(FileNameMainFileTemplate)
+	if err := DownloadFile(FileNameConfig);err!= nil {
+		return err
+	}
+	if err := DownloadFile(FileNameDir);err!= nil {
+		return err
+	}
+	if err := DownloadFile(FileNameMainFileTemplate);err!= nil {
+		return err
+	}
 
-	Log("config file download success~")
+	if spin.Loading() {
+		spinStop()
+	}
+
+	 Log("config file download success~")
+	return nil
 }
 
 func downloadAndWriteFile(url string) error {
@@ -71,8 +83,8 @@ func downloadAndWriteFile(url string) error {
 }
 
 // DownloadFile 下载指定远程配置文件
-func DownloadFile(name string) {
-	DealErr(task.Tasks.Call(name).Err(), true)
+func DownloadFile(name string) error{
+	return task.Tasks.Call(name).Err()
 }
 
 func Init() {

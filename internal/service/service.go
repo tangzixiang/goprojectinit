@@ -46,11 +46,14 @@ func Run() {
 	DealErr(os.Chdir(projectPath), true)
 	DealErr(os.Mkdir("configs", DirMode), true)
 
+	// 初始化文件下载环境
+	request.Init()
+
 	// 检查配置文件
-	checkConfigPath(opts.ConfigPath)
+	DealErr(checkConfigPath(opts.ConfigPath), true)
 
 	// 检查缺失的文件并下载
-	checkConfigContent()
+	DealErr(checkConfigContent(), true)
 
 	//  子目录
 	dir.MakeProjectSubDir(config.Dirs)
@@ -61,32 +64,32 @@ func Run() {
 	Log(fmt.Sprintf("projoct %v init success~", opts.Args.ProjectName[0]))
 }
 
-func checkConfigPath(path *string) {
+func checkConfigPath(path *string) error {
 	var configPath, configPathDir string
 	var err error
 
 	if path == nil {
-		request.DownloadAllFiles() // 下载所有配置文件到临时目录
+		DealErr(request.DownloadAllFiles(), true) // 下载所有配置文件到临时目录
 
 		configPath, configPathDir = filepath.Join(TempDir, FileNameConfig), TempDir
 	} else {
 		configPath, err = PathAbs(*path)
-		DealErr(err, true)
-
+		if err != nil {
+			return err
+		}
 		configPathDir = filepath.Dir(configPath)
 	}
 
 	config.PathDir = configPathDir
 	config.ParseConfigFile(configPath)
 
-	CopyFileTo("configs", configPath)
-
-	return
+	return CopyFileTo("configs", configPath)
 }
 
-func checkConfigContent() {
+func checkConfigContent() error {
 	var shouldDownloadFile []string
 	var dirPath, templatePath string
+	var err error
 
 	// dir 文件
 	if config.Config.DirPath == nil {
@@ -102,7 +105,11 @@ func checkConfigContent() {
 		}
 	}
 	config.ParseConfigContentDirs(dirPath)
-	CopyFileTo("configs", dirPath)
+
+	err = CopyFileTo("configs", dirPath)
+	if err != nil {
+		return err
+	}
 
 	// main 目标文件
 	if config.Config.MainFileTempPath == nil {
@@ -112,28 +119,42 @@ func checkConfigContent() {
 		templatePath = filepath.Join(TempDir, FileNameMainFileTemplate)
 	} else {
 		absPath, err := PathAbs(*config.Config.MainFileTempPath)
-		DealErr(err, true)
+		if err != nil {
+			return err
+		}
 
 		exists, err := PathExists(absPath)
-		DealErr(err, true)
+		if err != nil {
+			return err
+		}
 
 		if !exists {
-			DealErr(
-				fmt.Errorf("file not find in %q", absPath), true)
+			return fmt.Errorf("file not find in %q", absPath)
 		}
 
 		templatePath = absPath
 	}
 	config.MainFileTemplatePath = templatePath
-	CopyFileTo("configs", templatePath)
+	err = CopyFileTo("configs", templatePath)
+	if err != nil {
+		return err
+	}
 
+	var spinStop func()
 	if !spin.Loading() {
-		spinStop := spin.Start("downloading...")
-		defer spinStop()
+		spinStop = spin.Start("downloading...")
 	}
 
 	for _, fileName := range shouldDownloadFile {
-		request.DownloadFile(fileName)
-		Log(fmt.Sprintf("file %v download success~", fileName))
+		if err = request.DownloadFile(fileName); err != nil {
+			return err
+		}
 	}
+
+	if spin.Loading() {
+		spinStop()
+	}
+
+	Log(fmt.Sprintf("file %q download success~", shouldDownloadFile))
+	return nil
 }
