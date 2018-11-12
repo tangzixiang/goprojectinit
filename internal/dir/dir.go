@@ -30,6 +30,8 @@ func GetProjectPath(targetPath *string, projectName string) string {
 		if !exists {
 			DealErr(errors.New(fmt.Sprintf("config file %v not found", *targetPath)), true)
 		}
+
+		projectPath = absPath
 	}
 
 	return filepath.Join(projectPath, projectName)

@@ -93,8 +93,10 @@ func checkConfigContent() error {
 
 	// dir 文件
 	if config.Config.DirPath == nil {
-		Log("dir config file not found")
-		shouldDownloadFile = append(shouldDownloadFile, FileNameDir)
+		if !request.DownloadedFile[RemoteURLDir] {
+			Log("dir config file not found")
+			shouldDownloadFile = append(shouldDownloadFile, FileNameDir)
+		}
 
 		dirPath = filepath.Join(TempDir, FileNameDir)
 	} else {
@@ -113,8 +115,11 @@ func checkConfigContent() error {
 
 	// main 目标文件
 	if config.Config.MainFileTempPath == nil {
-		Log("main file template not found")
-		shouldDownloadFile = append(shouldDownloadFile, FileNameMainFileTemplate)
+
+		if !request.DownloadedFile[RemoteURLMainFileTemplate] {
+			Log("main file template not found")
+			shouldDownloadFile = append(shouldDownloadFile, FileNameMainFileTemplate)
+		}
 
 		templatePath = filepath.Join(TempDir, FileNameMainFileTemplate)
 	} else {
@@ -155,6 +160,8 @@ func checkConfigContent() error {
 		spinStop()
 	}
 
-	Log(fmt.Sprintf("file %q download success~", shouldDownloadFile))
+	if len(shouldDownloadFile) >0{
+		Log(fmt.Sprintf("file %q download success~", shouldDownloadFile))
+	}
 	return nil
 }

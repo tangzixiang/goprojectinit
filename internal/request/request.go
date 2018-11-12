@@ -29,9 +29,11 @@ func DownloadAllFiles() error{
 	if err := DownloadFile(FileNameConfig);err!= nil {
 		return err
 	}
+
 	if err := DownloadFile(FileNameDir);err!= nil {
 		return err
 	}
+
 	if err := DownloadFile(FileNameMainFileTemplate);err!= nil {
 		return err
 	}

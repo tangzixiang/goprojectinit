@@ -28,9 +28,10 @@ func WriteMainFileWithTemp(fileNames []string, isToolProject bool) {
 
 func writeCMDMainFile(fileName string) {
 
-	DealErr(os.MkdirAll(filepath.Join("cmd", fileName), global.DirMode), true)
+	cmdPath := filepath.Join("cmd", fileName)
+	DealErr(os.MkdirAll(cmdPath, global.DirMode), true)
 
-	mainFile, err := os.Create(fmt.Sprintf("%v.go", fileName))
+	mainFile, err := os.Create(fmt.Sprintf("%v.go", filepath.Join(cmdPath, fileName)))
 	DealErr(err, true)
 
 	write(mainFile)
