@@ -8,43 +8,42 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tangzixiang/goprojectinit/internal/options"
+	"github.com/tangzixiang/goprojectinit/internal/global"
 	. "github.com/tangzixiang/goprojectinit/pkg/utils"
 )
 
-// 权限信息
-var (
-	DirMode = os.ModeDir | os.ModePerm
-)
-
 // GetProjectPath 获取项目路径，返回的路径为绝对路径
-func GetProjectPath(opts *options.HelpOptions) string {
-	var projectPath string
+func GetProjectPath(targetPath *string, projectName string) string {
 	var err error
 
-	if opts.TargetPathDir == nil {
-		projectPath, err = os.Getwd()
-	} else {
-		projectPath, err = filepath.Abs(*opts.TargetPathDir)
-		if err != nil && !os.IsNotExist(err) {
-			DealErr(err, false)
+	projectPath, err := os.Getwd()
+	DealErr(err, true)
+
+	if targetPath != nil {
+
+		absPath, err := PathAbs(*targetPath)
+		DealErr(err, true)
+
+		exists, err := PathExists(absPath)
+		DealErr(err, true)
+
+		if !exists {
+			DealErr(errors.New(fmt.Sprintf("config file %v not found", *targetPath)), true)
 		}
 	}
 
-	DealErr(err, false)
-
-	return filepath.Join(projectPath, opts.Args.ProjectName)
+	return filepath.Join(projectPath, projectName)
 }
 
-// MakeProjectPathDir 创建项目目录,返回是否创建成功
-func MakeProjectPathDir(opts *options.HelpOptions, projectPath string) bool {
+// MakeProjectPath 创建项目目录,返回是否创建成功
+func MakeProjectPath(projectPath string, cover bool) bool {
 	var err error
 
 	exist, err := PathExists(projectPath)
 	DealErr(err, false)
 
 	if exist {
-		if !opts.Cover { // 已存在该目录但不需要覆盖
+		if !cover { // 已存在该目录但不需要覆盖
 			DealErr(errors.New(fmt.Sprintf("file or directory %v was exists", projectPath)), false)
 		}
 
@@ -59,13 +58,14 @@ func MakeProjectPathDir(opts *options.HelpOptions, projectPath string) bool {
 		Log(fmt.Sprintf("directory %v remove success~", projectPath))
 	}
 
-	DealErr(os.MkdirAll(projectPath, DirMode), true)
+	DealErr(os.MkdirAll(projectPath, global.DirMode), true)
 	Log(fmt.Sprintf("make new directory %v success~", projectPath))
 
 	return true
 }
 
 func ensureCover() bool {
+
 	text := strings.ToLower(getScannerText())
 	if text != "yes" && text != "y" {
 		return false
@@ -74,6 +74,7 @@ func ensureCover() bool {
 }
 
 func getScannerText() string {
+
 	scanner := bufio.NewScanner(os.Stdin)
 	if !scanner.Scan() {
 		return ""
@@ -86,8 +87,9 @@ func getScannerText() string {
 }
 
 // MakeProjectSubDir 创建项目子目录
-func MakeProjectSubDir(dirs []string){
+func MakeProjectSubDir(dirs []string) {
+
 	for _, dir := range dirs {
-		DealErr(os.MkdirAll(dir,DirMode),true)
+		DealErr(os.MkdirAll(dir, global.DirMode), true)
 	}
 }

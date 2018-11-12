@@ -1,0 +1,6 @@
+{{/* main file */}}
+package main
+
+func main() {
+    // todo everything
+}
