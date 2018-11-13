@@ -1,5 +1,5 @@
 ## 相对路径以当前配置文件所在目录为基准
 ## 项目初始化目录结构,可选
-dir: dir.json
+# dir: dir.json
 ## main 文件的模板,可选
 # mainFileTemp: main-file.temp
