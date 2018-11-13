@@ -63,8 +63,8 @@ myproject/
 │   ├── ci
 │   └── package
 ├── cmd
-│   └── test
-│       └── test.go
+│   └── myproject
+│       └── myproject.go
 ├── configs
 │   ├── dir.json
 │   ├── main-file.temp
