@@ -42,18 +42,20 @@ func Run() {
 		return
 	}
 
-	// 切换工作目录
-	DealErr(os.Chdir(projectPath), true)
-	DealErr(os.Mkdir("configs", DirMode), true)
+	configsDirPath:= filepath.Join(projectPath, "configs")
+	DealErr(os.Mkdir(configsDirPath, DirMode), true)
 
 	// 初始化文件下载环境
 	request.Init()
 
 	// 检查配置文件
-	DealErr(checkConfigPath(opts.ConfigPath), true)
+	DealErr(checkConfigPath(opts.ConfigPath,configsDirPath), true)
 
 	// 检查缺失的文件并下载
-	DealErr(checkConfigContent(), true)
+	DealErr(checkConfigContent(configsDirPath), true)
+
+	// 切换工作目录
+	DealErr(os.Chdir(projectPath), true)
 
 	//  子目录
 	dir.MakeProjectSubDir(config.Dirs)
@@ -64,7 +66,7 @@ func Run() {
 	Log(fmt.Sprintf("projoct %v init success~", opts.Args.ProjectName[0]))
 }
 
-func checkConfigPath(path *string) error {
+func checkConfigPath(path *string,configsDirPath string) error {
 	var configPath, configPathDir string
 	var err error
 
@@ -83,10 +85,10 @@ func checkConfigPath(path *string) error {
 	config.PathDir = configPathDir
 	config.ParseConfigFile(configPath)
 
-	return CopyFileTo("configs", configPath)
+	return CopyFileTo(configsDirPath, configPath)
 }
 
-func checkConfigContent() error {
+func checkConfigContent(configsDirPath string) error {
 	var shouldDownloadFile []string
 	var dirPath, templatePath string
 	var err error
@@ -105,12 +107,15 @@ func checkConfigContent() error {
 		if !filepath.IsAbs(dirPath) {
 			dirPath = filepath.Join(config.PathDir, dirPath)
 		}
-	}
-	config.ParseConfigContentDirs(dirPath)
 
-	err = CopyFileTo("configs", dirPath)
-	if err != nil {
-		return err
+		exists, err := PathExists(dirPath)
+		if err != nil {
+			return err
+		}
+
+		if !exists {
+			return fmt.Errorf("file not find in %q", dirPath)
+		}
 	}
 
 	// main 目标文件
@@ -123,26 +128,20 @@ func checkConfigContent() error {
 
 		templatePath = filepath.Join(TempDir, FileNameMainFileTemplate)
 	} else {
-		absPath, err := PathAbs(*config.Config.MainFileTempPath)
-		if err != nil {
-			return err
+		templatePath = *config.Config.MainFileTempPath
+
+		if !filepath.IsAbs(templatePath) {
+			templatePath = filepath.Join(config.PathDir, templatePath)
 		}
 
-		exists, err := PathExists(absPath)
+		exists, err := PathExists(templatePath)
 		if err != nil {
 			return err
 		}
 
 		if !exists {
-			return fmt.Errorf("file not find in %q", absPath)
+			return fmt.Errorf("file not find in %q", templatePath)
 		}
-
-		templatePath = absPath
-	}
-	config.MainFileTemplatePath = templatePath
-	err = CopyFileTo("configs", templatePath)
-	if err != nil {
-		return err
 	}
 
 	var spinStop func()
@@ -160,8 +159,21 @@ func checkConfigContent() error {
 		spinStop()
 	}
 
-	if len(shouldDownloadFile) >0{
+	if len(shouldDownloadFile) > 0 {
 		Log(fmt.Sprintf("file %q download success~", shouldDownloadFile))
 	}
+
+	config.ParseConfigContentDirs(dirPath)
+	err = CopyFileTo(configsDirPath, dirPath)
+	if err != nil {
+		return err
+	}
+
+	config.MainFileTemplatePath = templatePath
+	err = CopyFileTo(configsDirPath, templatePath)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
