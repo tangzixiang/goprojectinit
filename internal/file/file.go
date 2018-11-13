@@ -6,27 +6,26 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/tangzixiang/goprojectinit/internal/config"
 	"github.com/tangzixiang/goprojectinit/internal/global"
 	. "github.com/tangzixiang/goprojectinit/pkg/utils"
 )
 
 // WriteMainTempFile 实例化模板到文件
-func WriteMainFileWithTemp(fileNames []string, isToolProject bool) {
+func WriteMainFileWithTemp(fileNames []string, isToolProject bool, mainFileTemplatePath string) {
 
 	if isToolProject {
 		fileNames = fileNames[1:]
 
 		// 将 main 文件写在根目录下
-		writeToolMainFile()
+		writeToolMainFile(mainFileTemplatePath)
 	}
 
 	for _, fileName := range fileNames {
-		writeCMDMainFile(fileName)
+		writeCMDMainFile(fileName, mainFileTemplatePath)
 	}
 }
 
-func writeCMDMainFile(fileName string) {
+func writeCMDMainFile(fileName string, mainFileTemplatePath string) {
 
 	cmdPath := filepath.Join("cmd", fileName)
 	DealErr(os.MkdirAll(cmdPath, global.DirMode), true)
@@ -34,20 +33,20 @@ func writeCMDMainFile(fileName string) {
 	mainFile, err := os.Create(fmt.Sprintf("%v.go", filepath.Join(cmdPath, fileName)))
 	DealErr(err, true)
 
-	write(mainFile)
+	write(mainFile, mainFileTemplatePath)
 }
 
-func writeToolMainFile() {
+func writeToolMainFile(mainFileTemplatePath string) {
 
 	mainFile, err := os.Create("main.go")
 	DealErr(err, true)
 
-	write(mainFile)
+	write(mainFile, mainFileTemplatePath)
 }
 
-func write(file *os.File) {
+func write(file *os.File, mainFileTemplatePath string) {
 
-	temp, err := template.ParseFiles(config.MainFileTemplatePath)
+	temp, err := template.ParseFiles(mainFileTemplatePath)
 	DealErr(err, true)
 
 	defer (func() {

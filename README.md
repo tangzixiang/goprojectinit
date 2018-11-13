@@ -10,9 +10,12 @@
 
 **goprojectinit** 是一个可以快速初始化 go 项目环境的工具，该工具具体以下特色：
 
-- 支持自定义初始化的目录环境。
-- 主动创建好项目单个或多个入口文件。
-- 支持指定项目的初始化路径，指定的项目目录已存在则不会自动覆盖，若需要覆盖只需要添加一个参数即可。
+- 支持自定义初始化的目录环境
+- 主动创建项目单个或多个入口文件
+- 支持指定项目的初始化路径
+- 自动初始化 `git` 环境
+- 自动初始化 `vendor` 环境
+- 自动创建 `README.md` 文件
 
 
 
@@ -52,13 +55,16 @@ Arguments:
 tangzixiang$ goprojectinit myproject
 tangzixiang$ tree myproject/
 myproject/
+├── .git
+├── .gitignore
+├── README.md
 ├── bin
 ├── build
 │   ├── ci
 │   └── package
 ├── cmd
-│   └── myproject
-│       └── myproject.go
+│   └── test
+│       └── test.go
 ├── configs
 │   ├── dir.json
 │   ├── main-file.temp
@@ -76,7 +82,9 @@ myproject/
 ├── pkg
 │   ├── middleware
 │   └── model
-└── scripts
+├── scripts
+└── vendor
+    └── vendor.json
 ```
 
 通过这么一个简单的命令，快速的初始化好一个 go 项目的目录环境，这里使用的是默认的目录配置。
@@ -93,6 +101,9 @@ myproject/
 tangzixiang$ goprojectinit myproject -t
 tangzixiang$ tree myproject/
 myproject/
+├── .git
+├── .gitignore
+├── README.md
 ├── bin
 ├── build
 │   ├── ci
@@ -116,7 +127,9 @@ myproject/
 ├── pkg
 │   ├── middleware
 │   └── model
-└── scripts
+├── scripts
+└── vendor
+    └── vendor.json
 ```
 
 是否工具型项目的区别在于项目根目录是否存在 `main.go` 文件。
@@ -129,9 +142,11 @@ myproject/
 
 ```bash
 tangzixiang$ goprojectinit myproject subservice
-
-tangzixiang:tangzixiang tangzixiang$ tree myproject
+tangzixiang$ tree myproject
 myproject/
+├── .git
+├── .gitignore
+├── README.md
 ├── bin
 ├── build
 │   ├── ci
@@ -158,7 +173,9 @@ myproject/
 ├── pkg
 │   ├── middleware
 │   └── model
-└── scripts
+├── scripts
+└── vendor
+    └── vendor.json
 ```
 
 
@@ -294,11 +311,9 @@ drwxr-xr-x  5 xxx  xxx  160 11  9 21:17 myproject
 
 ## TODO
 
-1. 自动初始化 `git` 环境
-2. 自动初始化 `vendor` 环境，并且支持指定 `vendor.json`
-3. 自动创建好 `README.md` 
-4. 工具初始化参数同时支持命令行及配置文件
-5. 支持自动初始化 model 文件
+1. 支持指定 `vendor.json`
+2. 工具初始化参数同时支持命令行及配置文件
+3. 支持自动初始化 model 文件
 
 
 

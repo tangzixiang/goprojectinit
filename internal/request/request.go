@@ -2,7 +2,6 @@ package request
 
 import (
 	"fmt"
-	"github.com/tangzixiang/goprojectinit/pkg/task"
 	"io"
 	"net/http"
 	"os"
@@ -10,6 +9,7 @@ import (
 
 	. "github.com/tangzixiang/goprojectinit/internal/global"
 	"github.com/tangzixiang/goprojectinit/pkg/spin"
+	"github.com/tangzixiang/goprojectinit/pkg/task"
 	. "github.com/tangzixiang/goprojectinit/pkg/utils"
 )
 
@@ -19,30 +19,24 @@ var (
 )
 
 // DownloadFiles 下载所有远程配置文件
-func DownloadAllFiles() error{
+func DownloadAllFiles() error {
 	var spinStop func()
 
 	if !spin.Loading() {
 		spinStop = spin.Start("downloading...")
 	}
 
-	if err := DownloadFile(FileNameConfig);err!= nil {
-		return err
-	}
-
-	if err := DownloadFile(FileNameDir);err!= nil {
-		return err
-	}
-
-	if err := DownloadFile(FileNameMainFileTemplate);err!= nil {
-		return err
+	for fileName := range FileNameUrlM {
+		if err := DownloadFile(fileName); err != nil {
+			return err
+		}
 	}
 
 	if spin.Loading() {
 		spinStop()
 	}
 
-	 Log("config file download success~")
+	Log("config file download success~")
 	return nil
 }
 
@@ -85,22 +79,16 @@ func downloadAndWriteFile(url string) error {
 }
 
 // DownloadFile 下载指定远程配置文件
-func DownloadFile(name string) error{
+func DownloadFile(name string) error {
 	return task.Tasks.Call(name).Err()
 }
 
 func Init() {
-	DealErr(
-		task.Tasks.
-			HandleFuc(FileNameConfig, func() error {
-				return downloadAndWriteFile(RemoteURLConfig)
-			}).
-			HandleFuc(FileNameDir, func() error {
-				return downloadAndWriteFile(RemoteURLDir)
-			}).
-			HandleFuc(FileNameMainFileTemplate, func() error {
-				return downloadAndWriteFile(RemoteURLMainFileTemplate)
-			}).Err(),
-		true,
-	)
+	for fileName, remoteURL := range FileNameUrlM {
+
+		DealErr(
+			task.Tasks.HandleFuc(fileName, func() error {
+				return downloadAndWriteFile(remoteURL)
+			}, ).Err(), true)
+	}
 }
