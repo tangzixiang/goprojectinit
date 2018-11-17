@@ -86,9 +86,13 @@ func DownloadFile(name string) error {
 func Init() {
 	for fileName, remoteURL := range FileNameUrlM {
 
-		DealErr(
-			task.Tasks.HandleFuc(fileName, func() error {
-				return downloadAndWriteFile(remoteURL)
-			}, ).Err(), true)
+		(func(fileName, remoteURL string) {
+
+			DealErr(
+				task.Tasks.HandleFuc(fileName, func() error {
+					return downloadAndWriteFile(remoteURL)
+				}, ).Err(), true)
+
+		})(fileName, remoteURL)
 	}
 }

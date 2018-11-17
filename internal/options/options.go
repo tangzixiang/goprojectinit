@@ -10,7 +10,7 @@ import (
 
 var (
 	opts    HelpOptions
-	version = "1.0.3"
+	version = "1.0.4"
 )
 
 // Parse 开始解析命令行参数
