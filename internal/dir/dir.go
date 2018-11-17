@@ -24,13 +24,6 @@ func GetProjectPath(targetPath *string, projectName string) string {
 		absPath, err := PathAbs(*targetPath)
 		DealErr(err, true)
 
-		exists, err := PathExists(absPath)
-		DealErr(err, true)
-
-		if !exists {
-			DealErr(errors.New(fmt.Sprintf("config file %v not found", *targetPath)), true)
-		}
-
 		projectPath = absPath
 	}
 
