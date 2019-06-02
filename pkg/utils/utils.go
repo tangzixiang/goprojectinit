@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -73,5 +75,33 @@ func CopyFile(targetFilePath, srcFilePath string) error {
 
 // CopyFileTo 将文件拷贝打目录
 func CopyFileTo(targetDir, filePath string) error {
-	return exec.Command("cp", filePath, targetDir).Run()
+	return ExecCommand("cp", filePath, targetDir)
+}
+
+// ExecCommandWithMsg 执行底层命令，返回执行的输出，可能包含执行失败的原因，err 不一定包含错误信息
+// 当执行返回的 err 类型是 *exec.ExitError 时，stderrMsg 将会派上用场
+func ExecCommandWithMsg(name string, args ...string) (stdoutMsg, stderrMsg string, err error) {
+
+	stdoutBuffer := &bytes.Buffer{}
+	stderrBuffer := &bytes.Buffer{}
+
+	cmd := exec.Command(name, args...)
+	cmd.Stdout = stdoutBuffer
+	cmd.Stderr = stderrBuffer
+
+	err = cmd.Run()
+	stdoutMsg = stdoutBuffer.String()
+	stderrMsg = stderrBuffer.String()
+
+	return
+}
+
+func ExecCommand(name string, args ...string) error {
+	_, errMsg, err := ExecCommandWithMsg(name, args...)
+
+	if _, ok := err.(*exec.ExitError); ok {
+		return errors.New(errMsg)
+	}
+
+	return err
 }

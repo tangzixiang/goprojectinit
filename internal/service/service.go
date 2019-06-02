@@ -24,7 +24,8 @@ func Run() {
 	}
 
 	// 获取项目地址的绝对路径
-	projectPath := dir.GetProjectPath(opts.TargetPath, opts.Args.ProjectName[0])
+	projectName := opts.Args.ProjectName[0]
+	projectPath := dir.GetProjectPath(opts.TargetPath, projectName)
 
 	Log(fmt.Sprintf("project path is %q", projectPath))
 
@@ -43,7 +44,7 @@ func Run() {
 		return
 	}
 
-	configsDirPath := filepath.Join(projectPath, "configs")
+	configsDirPath := filepath.Join(projectPath, ".configs")
 	DealErr(os.Mkdir(configsDirPath, DirMode), true)
 
 	// 初始化文件下载环境
@@ -64,8 +65,8 @@ func Run() {
 	// 新建 README.md
 	DealErr(touchREADME(), true)
 
-	// 初始化 vendor 环境
-	DealErr(checekVendor(), true)
+	// 初始化 vendor 环境 或则 go modules 环境
+	DealErr(checkEnv(opts.UseVendor, opts.ModulesName, projectName), true)
 
 	//  子目录
 	dir.MakeProjectSubDir(config.Dirs)
@@ -74,6 +75,17 @@ func Run() {
 	file.WriteMainFileWithTemp(opts.Args.ProjectName, opts.IsTool, config.MainFileTemplatePath)
 
 	Log(fmt.Sprintf("projoct %v init success~", opts.Args.ProjectName[0]))
+}
+
+func checkEnv(useVendor bool, moduleName, projectName string) error {
+	if useVendor {
+		return checekVendor()
+	} else {
+		if moduleName == "" {
+			return checkGOModules(projectName)
+		}
+		return checkGOModules(moduleName)
+	}
 }
 
 func checekVendor() error {
@@ -87,7 +99,7 @@ func checekVendor() error {
 		}
 
 		// 需要下载 govendor
-		err = exec.Command("go", "get", "-u", "github.com/kardianos/govendor").Run()
+		err = ExecCommand("go", "get", "-u", "github.com/kardianos/govendor")
 		if spin.Loading() {
 			spinStop()
 		}
@@ -97,7 +109,21 @@ func checekVendor() error {
 		}
 	}
 
-	if err = exec.Command("govendor", "init").Run(); err != nil {
+	if err = ExecCommand("govendor", "init"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func checkGOModules(moduleName string) error {
+
+	if err := ExecCommand("go", "mod", "init", moduleName); err != nil {
+		Log("my be you go version not support go-modules,if want use vendor please run command with -n")
+		return err
+	}
+
+	if err := ExecCommand("go", "mod", "tidy"); err != nil {
 		return err
 	}
 
@@ -105,7 +131,7 @@ func checekVendor() error {
 }
 
 func touchREADME() error {
-	return exec.Command("touch", "README.md").Run()
+	return ExecCommand("touch", "README.md")
 }
 
 func checkGitEnv() error {
@@ -119,7 +145,7 @@ func checkGitEnv() error {
 		return err
 	}
 
-	if err = exec.Command("git", "init").Run(); err != nil {
+	if err = ExecCommand("git", "init"); err != nil {
 		return err
 	}
 

@@ -89,9 +89,9 @@ func Init() {
 		(func(fileName, remoteURL string) {
 
 			DealErr(
-				task.Tasks.HandleFuc(fileName, func() error {
-					return downloadAndWriteFile(remoteURL)
-				}, ).Err(), true)
+				task.Tasks.HandleFuc(fileName,
+					func() error { return downloadAndWriteFile(remoteURL) }).Err(),
+				true)
 
 		})(fileName, remoteURL)
 	}

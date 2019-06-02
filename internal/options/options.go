@@ -10,7 +10,7 @@ import (
 
 var (
 	opts    HelpOptions
-	version = "1.0.4"
+	version = "1.1.0"
 )
 
 // Parse 开始解析命令行参数
@@ -57,13 +57,15 @@ func parseOptions() *flags.Parser {
 }
 
 type HelpOptions struct {
-	Version    bool    `short:"v" long:"version" description:"show this tool version"`
-	Verbose    bool    `short:"b" long:"verbose" description:"Show verbose debug information"`
-	Cover      bool    `short:"c" long:"cover" description:"if the project path exists ,cover the directory and init the project"`
-	IsTool     bool    `short:"t" long:"istool" description:"istool mean this project is a tool project,so the main-file will be placed in project root directory"`
-	TargetPath *string `short:"p" long:"targetpath" description:"Project should init in the which directory,default is current path,if target directory not exists will be created"`
-	ConfigPath *string `short:"f" long:"configfile" description:"which init-config file should be use,if not set, default file will be download"`
-	Args       struct {
+	Version     bool    `short:"v" long:"version" description:"show this tool version"`
+	Verbose     bool    `short:"b" long:"verbose" description:"Show verbose debug information"`
+	Cover       bool    `short:"c" long:"cover" description:"if the project path exists ,cover the directory and init the project"`
+	IsTool      bool    `short:"t" long:"istool" description:"istool mean this project is a tool project,so the main-file will be placed in project root directory"`
+	UseVendor   bool    `short:"n" long:"usevendor" description:"usevendor mean this project init whit vendor,default use go-modules"`
+	ModulesName string  `short:"m" long:"modulename" description:"modulename use for go modules init file: go.mod,default use project name"`
+	TargetPath  *string `short:"p" long:"targetpath" description:"project should init in the which directory,default is current path,if target directory not exists will be created"`
+	ConfigPath  *string `short:"f" long:"configfile" description:"which init-config file should be use,if not set, default file will be download"`
+	Args        struct {
 		ProjectName []string `positional-arg-name:"projectname" description:"init the project with this name, the first name will be named for project,then all remaining names will be sub service name in cmd directory"`
 	} `positional-args:"yes" required:"yes"`
 }

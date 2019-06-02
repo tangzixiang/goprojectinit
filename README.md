@@ -14,7 +14,7 @@
 - 主动创建项目单个或多个入口文件
 - 支持指定项目的初始化路径
 - 自动初始化 `git` 环境
-- 自动初始化 `vendor` 环境
+- 自动初始化 `vendor` 环境或者自动初始化 `modules`环境 (默认)
 - 自动创建 `README.md` 文件
 
 
@@ -31,7 +31,9 @@ Application Options:
   -b, --verbose      Show verbose debug information
   -c, --cover        if the project path exists ,cover the directory and init the project
   -t, --istool       istool mean this project is a tool project,so the main-file will be placed in project root directory
-  -p, --targetpath=  Project should init in the which directory,default is current path,if target directory not exists will be created
+  -n, --usevendor    usevendor mean this project init whit vendor,default use go-modules
+  -m, --modulename=  modulename use for go modules init file: go.mod,default use project name
+  -p, --targetpath=  project should init in the which directory,default is current path,if target directory not exists will be created
   -f, --configfile=  which init-config file should be use,if not set, default file will be download
 
 Help Options:
@@ -55,8 +57,6 @@ Arguments:
 tangzixiang$ goprojectinit myproject
 tangzixiang$ tree myproject/
 myproject/
-├── .git
-├── .gitignore
 ├── README.md
 ├── bin
 ├── build
@@ -66,10 +66,8 @@ myproject/
 │   └── myproject
 │       └── myproject.go
 ├── configs
-│   ├── dir.json
-│   ├── main-file.temp
-│   └── project-init.yaml
 ├── deplyments
+├── go.mod
 ├── init
 ├── internal
 │   ├── api
@@ -82,9 +80,7 @@ myproject/
 ├── pkg
 │   ├── middleware
 │   └── model
-├── scripts
-└── vendor
-    └── vendor.json
+└── scripts
 ```
 
 通过这么一个简单的命令，快速的初始化好一个 go 项目的目录环境，这里使用的是默认的目录配置。
@@ -101,8 +97,6 @@ myproject/
 tangzixiang$ goprojectinit myproject -t
 tangzixiang$ tree myproject/
 myproject/
-├── .git
-├── .gitignore
 ├── README.md
 ├── bin
 ├── build
@@ -110,10 +104,8 @@ myproject/
 │   └── package
 ├── cmd
 ├── configs
-│   ├── dir.json
-│   ├── main-file.temp
-│   └── project-init.yaml
 ├── deplyments
+├── go.mod
 ├── init
 ├── internal
 │   ├── api
@@ -127,9 +119,7 @@ myproject/
 ├── pkg
 │   ├── middleware
 │   └── model
-├── scripts
-└── vendor
-    └── vendor.json
+└── scripts
 ```
 
 是否工具型项目的区别在于项目根目录是否存在 `main.go` 文件。
@@ -144,8 +134,6 @@ myproject/
 tangzixiang$ goprojectinit myproject subservice
 tangzixiang$ tree myproject
 myproject/
-├── .git
-├── .gitignore
 ├── README.md
 ├── bin
 ├── build
@@ -156,10 +144,44 @@ myproject/
 │   │   └── myproject.go
 │   └── subservice
 │       └── subservice.go
-├── configs
-│   ├── dir.json
-│   ├── main-file.temp
-│   └── project-init.yaml
+├── deplyments
+├── go.mod
+├── init
+├── internal
+│   ├── api
+│   ├── config
+│   ├── handle
+│   ├── model
+│   ├── schema
+│   ├── service
+│   └── utils
+├── main.go
+├── pkg
+│   ├── middleware
+│   └── model
+└── scripts
+```
+
+
+
+### vendor
+
+**goprojectinit** 支持使用 vendor 作为模块处理，在初始化项目的时候带上 `-n` 或者 `--usevendor` 即可 。
+
+```bash
+tangzixiang$ goprojectinit myproject -n
+tangzixiang$ tree myproject
+myproject/
+├── .git
+├── .gitignore
+├── README.md
+├── bin
+├── build
+│   ├── ci
+│   └── package
+├── cmd
+│   └── myproject
+│       └── myproject.go
 ├── deplyments
 ├── init
 ├── internal
@@ -302,10 +324,16 @@ drwxr-xr-x  5 xxx  xxx  160 11  9 21:17 myproject
 
 1. 当项目初始化过程中因为其他外界因素导致中途失败后，工具会自动清除创建到一半的项目。
 
-2. 项目会默认带 `configs` 目录以及 `cmd` 目录
+2. 项目会默认带 `.configs` 目录以及 `cmd` 目录
 
-   1. 工具会将指定的初始化配置文件同步至 `configs` 目录下。
-   2. 工具会根据使用 `goprojectinit` 命令指定的 `projectname`  参数在 `cmd` 目录下创建同样数量及对应名字的目录。
+   - 工具会将指定的初始化配置文件同步至 `.configs` 目录下。
+   
+   - 工具会根据使用 `goprojectinit` 命令指定的 `projectname`  参数在 `cmd` 目录下创建同样数量及对应名字的目录。
+   
+3. 初始化默认使用的是 `go-modules` 模式，需要 go 版本的支持，go 在 `go1.11` 版本开始支持
+    - 初始化的 `go.mod` 文件的第一行为 `module {moduleName}`, 使用的 **moduleName** 默认为项目名，需要自定义的话可以附带 `-m` 参数指定自定义**moduleName** 。
+    
+    - 使用 `vendor` 模式需要带上 `-n` 参数，且确保项目位于 `GOPATH` 下。
 
 
 
