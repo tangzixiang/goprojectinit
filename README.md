@@ -12,6 +12,7 @@
 
 - 支持自定义初始化的目录环境
 - 主动创建项目单个或多个入口文件
+- 能够灵活指定创建的项目类型(工具型、服务型(默认)、类库类型)
 - 支持指定项目的初始化路径
 - 自动初始化 `git` 环境
 - 自动初始化 `vendor` 环境或者自动初始化 `modules`环境 (默认)
@@ -30,7 +31,8 @@ Application Options:
   -v, --version      show this tool version
   -b, --verbose      Show verbose debug information
   -c, --cover        if the project path exists ,cover the directory and init the project
-  -t, --istool       istool mean this project is a tool project,so the main-file will be placed in project root directory
+  -t, --tool         tool mean this project is a tool project,so the main-file will be placed in project root directory
+  -e, --empty        empty mean this project is a empty project or lib project
   -n, --usevendor    usevendor mean this project init whit vendor,default use go-modules
   -m, --modulename=  modulename use for go modules init file: go.mod,default use project name
   -p, --targetpath=  project should init in the which directory,default is current path,if target directory not exists will be created
@@ -91,7 +93,7 @@ myproject/
 
 ### 工具型项目
 
-若新建项目为工具型项目则指定 `-t` 或者 `--istool` 参数即可:
+若新建项目为工具型项目则指定 `-t` 或者 `--tool` 参数即可:
 
 ```bash
 tangzixiang$ goprojectinit myproject -t
@@ -125,6 +127,27 @@ myproject/
 是否工具型项目的区别在于项目根目录是否存在 `main.go` 文件。
 
 
+### 类库型项目
+
+若新建项目为工具型项目则指定 `-e` 或者 `--empty` 参数即可:
+
+```bash
+tangzixiang$ goprojectinit myproject -e
+tangzixiang$ tree myproject/
+myproject/
+├── README.md
+├── bin
+├── build
+│   ├── ci
+│   └── package
+├── configs
+├── deplyments
+├── go.mod
+├── init
+└── scripts
+```
+
+类库型项目不会主动创建任何 go 文件。
 
 ### 多服务项目
 
@@ -264,15 +287,13 @@ mainFileTemp: main-file.temp
 
 ```bash
 tangzixiang$ cat configs/dir.json
-[
-  "cmd",
-  "configs",
-  "internal/api",
-  "internal/config",
-  "internal/service",
-  "internal/model",
-  "internal/utils"
-]
+{
+  "default": ["bin","build/package","build/ci","cmd","configs","scripts","init","deplyments","internal/api","internal/config","internal/handle","internal/schema","internal/service","internal/model","internal/utils","pkg/middleware","pkg/model"],
+
+  "tool":["bin","build/package","build/ci","cmd","configs","scripts","init","deplyments","internal/config","internal/handle","internal/utils","pkg/middleware","pkg/model"],
+
+  "empty":["bin","build/package","build/ci","configs","scripts","init","deplyments"]
+}
 ```
 
 

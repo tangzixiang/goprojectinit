@@ -11,18 +11,22 @@ import (
 )
 
 // WriteMainTempFile 实例化模板到文件
-func WriteMainFileWithTemp(fileNames []string, isToolProject bool, mainFileTemplatePath string) {
+func WriteMainFileWithTemp(fileNames []string, projType string, mainFileTemplatePath string) {
 
-	if isToolProject {
+	switch projType {
+	case "empty": // do not thing
+	case "tool":
 		fileNames = fileNames[1:]
 
 		// 将 main 文件写在根目录下
 		writeToolMainFile(mainFileTemplatePath)
+		fallthrough
+	default:
+		for _, fileName := range fileNames {
+			writeCMDMainFile(fileName, mainFileTemplatePath)
+		}
 	}
 
-	for _, fileName := range fileNames {
-		writeCMDMainFile(fileName, mainFileTemplatePath)
-	}
 }
 
 func writeCMDMainFile(fileName string, mainFileTemplatePath string) {

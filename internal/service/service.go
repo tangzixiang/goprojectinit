@@ -47,6 +47,9 @@ func Run() {
 	configsDirPath := filepath.Join(projectPath, ".configs")
 	DealErr(os.Mkdir(configsDirPath, DirMode), true)
 
+	// 项目类型
+	projType := projectType(opts)
+
 	// 初始化文件下载环境
 	request.Init()
 
@@ -54,7 +57,7 @@ func Run() {
 	DealErr(checkConfigPath(opts.ConfigPath, configsDirPath), true)
 
 	// 检查缺失的文件并下载
-	DealErr(checkConfigContent(configsDirPath), true)
+	DealErr(checkConfigContent(configsDirPath, projType), true)
 
 	// 切换工作目录
 	DealErr(os.Chdir(projectPath), true)
@@ -72,9 +75,20 @@ func Run() {
 	dir.MakeProjectSubDir(config.Dirs)
 
 	// 创建项目入口文件
-	file.WriteMainFileWithTemp(opts.Args.ProjectName, opts.IsTool, config.MainFileTemplatePath)
+	file.WriteMainFileWithTemp(opts.Args.ProjectName, projType, config.MainFileTemplatePath)
 
 	Log(fmt.Sprintf("projoct %v init success~", opts.Args.ProjectName[0]))
+}
+
+func projectType(ops *options.HelpOptions) string {
+	switch {
+	case ops.Empty:
+		return "empty"
+	case ops.Tool:
+		return "tool"
+	default:
+		return "default"
+	}
 }
 
 func checkEnv(useVendor bool, moduleName, projectName string) error {
@@ -174,7 +188,7 @@ func checkConfigPath(path *string, configsDirPath string) error {
 	return CopyFileTo(configsDirPath, configPath)
 }
 
-func checkConfigContent(configsDirPath string) error {
+func checkConfigContent(configsDirPath string, projType string) error {
 	var shouldDownloadFile []string
 	var dirPath, templatePath string
 	var err error
@@ -253,7 +267,7 @@ func checkConfigContent(configsDirPath string) error {
 		Log(fmt.Sprintf("file %q download success~", shouldDownloadFile))
 	}
 
-	config.ParseConfigContentDirs(dirPath)
+	config.ParseConfigContentDirs(dirPath, projType)
 	err = CopyFileTo(configsDirPath, dirPath)
 	if err != nil {
 		return err

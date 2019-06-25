@@ -60,7 +60,8 @@ type HelpOptions struct {
 	Version     bool    `short:"v" long:"version" description:"show this tool version"`
 	Verbose     bool    `short:"b" long:"verbose" description:"Show verbose debug information"`
 	Cover       bool    `short:"c" long:"cover" description:"if the project path exists ,cover the directory and init the project"`
-	IsTool      bool    `short:"t" long:"istool" description:"istool mean this project is a tool project,so the main-file will be placed in project root directory"`
+	Tool        bool    `short:"t" long:"tool" description:"tool mean this project is a tool project,so the main-file will be placed in project root directory"`
+	Empty       bool    `short:"e" long:"empty" description:"empty mean this project is a empty project or lib project"`
 	UseVendor   bool    `short:"n" long:"usevendor" description:"usevendor mean this project init whit vendor,default use go-modules"`
 	ModulesName string  `short:"m" long:"modulename" description:"modulename use for go modules init file: go.mod,default use project name"`
 	TargetPath  *string `short:"p" long:"targetpath" description:"project should init in the which directory,default is current path,if target directory not exists will be created"`
