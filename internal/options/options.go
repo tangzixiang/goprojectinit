@@ -10,7 +10,7 @@ import (
 
 var (
 	opts    HelpOptions
-	version = "1.1.1"
+	version = "1.2.0"
 )
 
 // Parse 开始解析命令行参数
@@ -62,10 +62,12 @@ type HelpOptions struct {
 	Cover       bool    `short:"c" long:"cover" description:"if the project path exists ,cover the directory and init the project"`
 	Tool        bool    `short:"t" long:"tool" description:"tool mean this project is a tool project,so the main-file will be placed in project root directory"`
 	Empty       bool    `short:"e" long:"empty" description:"empty mean this project is a empty project or lib project"`
+	Lib         bool    `short:"l" long:"lib" description:"same as --empty"`
 	UseVendor   bool    `short:"n" long:"usevendor" description:"usevendor mean this project init whit vendor,default use go-modules"`
+	NoKeep      *bool   `short:"k" long:"nokeep" description:"don't add .keep each dir"`
+	Dirs        string  `short:"d" long:"dirs" description:"mkdir customer set,example: api,internal/configs,internal/model"`
 	ModulesName string  `short:"m" long:"modulename" description:"modulename use for go modules init file: go.mod,default use project name"`
 	TargetPath  *string `short:"p" long:"targetpath" description:"project should init in the which directory,default is current path,if target directory not exists will be created"`
-	ConfigPath  *string `short:"f" long:"configfile" description:"which init-config file should be use,if not set, default file will be download"`
 	Args        struct {
 		ProjectName []string `positional-arg-name:"projectname" description:"init the project with this name, the first name will be named for project,then all remaining names will be sub service name in cmd directory"`
 	} `positional-args:"yes" required:"yes"`

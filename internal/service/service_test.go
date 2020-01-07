@@ -11,5 +11,5 @@ func init() {
 }
 
 func Test_checkGOModules(t *testing.T) {
-	t.Logf("checkGOModules(): %v\n", checkGOModules())
+	t.Logf("checkGOModules(): %v\n", checkGOModules(""))
 }
