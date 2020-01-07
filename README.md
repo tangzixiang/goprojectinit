@@ -1,6 +1,28 @@
 # Go 项目工程初始化工具
 
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/tangzixiang/goprojectinit) [![](https://badgen.net/github/branches/tangzixiang/goprojectinit)](https://github.com/tangzixiang/goprojectinit/branches) [![](https://badgen.net/github/stars/tangzixiang/goprojectinit)](https://github.com/tangzixiang/goprojectinit/stargazers) [![](https://badgen.net/github/commits/tangzixiang/goprojectinit)](https://github.com/tangzixiang/goprojectinit/commits/master)[![](https://img.shields.io/badge/release-v1.2.0-brightgreen)](https://github.com/tangzixiang/goprojectinit/releases)
+
+
 `go get github.com/tangzixiang/goprojectinit`
+
+
+
+## 摘要
+
+- 概述
+- 使用帮助
+- 使用说明
+  - 快速创建项目
+  - 工具型项目
+  - 类库型项目
+  - 多服务项目
+  - 自定义目录
+  - vendor
+  - 展示更多调试信息
+  - 指定项目位置
+  - 覆盖项目路径
+- 注意
+- 参考
 
 
 
