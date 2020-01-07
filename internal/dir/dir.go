@@ -82,9 +82,41 @@ func getScannerText() string {
 }
 
 // MakeProjectSubDir 创建项目子目录
-func MakeProjectSubDir(dirs []string) {
+func MakeProjectSubDir(dirs []string, noKeep *bool) {
+	_noKeep := false
+	if noKeep != nil && *noKeep == true {
+		_noKeep = true
+	}
+
+	// 收集存在重复的父目录则不再添加 .keep ,cmd 目录默认不存放 .keep
+	parentDirNoKeepMap := map[string]bool{"cmd": true}
+
+	for _, dir := range dirs {
+		if strings.Index(dir, "/") != -1 {
+			splitDir := strings.Split(dir, "/")
+			splitDirLen := len(splitDir)
+
+			if splitDirLen > 1 {
+				lastPath := splitDir[0]
+				parentDirNoKeepMap[lastPath] = true
+
+				for i := 1; i < splitDirLen-1; i++ {
+					lastPath += "/" + splitDir[i]
+					parentDirNoKeepMap[lastPath] = true
+				}
+			}
+		}
+	}
 
 	for _, dir := range dirs {
 		DealErr(os.MkdirAll(dir, global.DirMode), true)
+
+		if _noKeep == true || parentDirNoKeepMap[dir] {
+			continue
+		}
+
+		f, err := os.Create(dir + "/.keep")
+		DealErr(err, true)
+		DealErr(f.Close(), true)
 	}
 }

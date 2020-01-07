@@ -5,28 +5,20 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 
+	. "github.com/tangzixiang/goprojectinit/internal/global"
 	. "github.com/tangzixiang/goprojectinit/pkg/utils"
 )
 
 type config struct {
-	DirPath          *string `yaml:"dir"          json:"dir"`
 	MainFileTempPath *string `yaml:"mainFileTemp" json:"mainFileTemp"`
-}
-
-type pdir struct {
-	Empty   []string `json:"empty"      yaml:"empty"`
-	Tool    []string `json:"tool"       yaml:"tool"`
-	Default []string `json:"default"    yaml:"default"`
 }
 
 // DirM 初始化目录
 var Dirs []string
-
-// PDirs 默认不同项目类型的目录结构
-var PDirs pdir
 
 // MainFileTemplatePath 模板文件位置
 var MainFileTemplatePath string
@@ -34,58 +26,33 @@ var MainFileTemplatePath string
 // Config 配置项
 var Config = new(config)
 
-// 配置文件目录，包绝对路径
-var PathDir string
+// ParseDirs 解析需要的目录
+func ParseDirs(projType string, dirs string) {
 
-// ParseConfigContentDirs 解析 dir 字段
-func ParseConfigContentDirs(configContentDirPath string, projType string) {
-
-	exists, err := PathExists(configContentDirPath)
-	DealErr(err, true)
-
-	if !exists {
-		DealErr(
-			fmt.Errorf("dir config file not find in %q", configContentDirPath), true)
+	switch projType {
+	case "empty":
+		Dirs = EmptyPath
+	case "tool":
+		Dirs = ToolPath
 	}
 
-	err = parseFile(configContentDirPath, &Dirs) // 兼容旧版本，尝试解析为单独的数组
-	if err != nil {
-		err = parseFile(configContentDirPath, &PDirs)
-	}
-	DealErr(err, true)
-
-	if len(Dirs) == 0 {
-		switch projType {
-		case "empty":
-			Dirs = PDirs.Empty
-		case "tool":
-			Dirs = PDirs.Tool
-		default:
-			Dirs = PDirs.Default
+	if dirs != "" {
+		dirs = strings.TrimSpace(dirs)
+		splits := strings.Split(dirs, ",")
+		if len(splits) > 0 {
+			for _, s := range splits {
+				Dirs = append(Dirs, strings.TrimSpace(s))
+			}
 		}
 	}
 
-	Log("read dir config file success~")
+	if len(Dirs) == 0 {
+		Dirs = DefaultPath
+	}
+
 	Log(fmt.Sprintf("dir's : %q", Dirs))
 
 	return
-}
-
-// ParseConfigFile 解析主配置文件
-func ParseConfigFile(configPath string) {
-
-	// 获取得到是绝对路径
-	exists, err := PathExists(configPath)
-	DealErr(err, true)
-
-	// 找不到真实的文件
-	if !exists {
-		DealErr(fmt.Errorf("file not find in %q", configPath), true)
-	}
-
-	DealErr(parseFile(configPath, Config), true)
-
-	Log("read init config file success~")
 }
 
 // 解析配置文件内容

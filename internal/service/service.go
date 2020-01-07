@@ -44,17 +44,20 @@ func Run() {
 		return
 	}
 
-	configsDirPath := filepath.Join(projectPath, ".configs")
+	configsDirPath := filepath.Join(projectPath, ".goprojectinit")
 	DealErr(os.Mkdir(configsDirPath, DirMode), true)
 
 	// 项目类型
 	projType := projectType(opts)
 
+	// 解析需要初始化的目录
+	config.ParseDirs(projType, opts.Dirs)
+
 	// 初始化文件下载环境
 	request.Init()
 
 	// 检查配置文件
-	DealErr(checkConfigPath(opts.ConfigPath, configsDirPath), true)
+	DealErr(request.DownloadAllFiles(), true) // 下载所有配置文件到临时目录
 
 	// 检查缺失的文件并下载
 	DealErr(checkConfigContent(configsDirPath, projType), true)
@@ -72,7 +75,7 @@ func Run() {
 	DealErr(checkEnv(opts.UseVendor, opts.ModulesName, projectName), true)
 
 	//  子目录
-	dir.MakeProjectSubDir(config.Dirs)
+	dir.MakeProjectSubDir(config.Dirs, opts.NoKeep)
 
 	// 创建项目入口文件
 	file.WriteMainFileWithTemp(opts.Args.ProjectName, projType, config.MainFileTemplatePath)
@@ -82,6 +85,8 @@ func Run() {
 
 func projectType(ops *options.HelpOptions) string {
 	switch {
+	case ops.Lib:
+		fallthrough
 	case ops.Empty:
 		return "empty"
 	case ops.Tool:
@@ -93,7 +98,7 @@ func projectType(ops *options.HelpOptions) string {
 
 func checkEnv(useVendor bool, moduleName, projectName string) error {
 	if useVendor {
-		return checekVendor()
+		return checkVendor()
 	} else {
 		if moduleName == "" {
 			return checkGOModules(projectName)
@@ -102,7 +107,7 @@ func checkEnv(useVendor bool, moduleName, projectName string) error {
 	}
 }
 
-func checekVendor() error {
+func checkVendor() error {
 	var err error
 
 	if _, err = exec.LookPath("govendor"); err != nil {
@@ -166,61 +171,13 @@ func checkGitEnv() error {
 	return CopyFileTo(".", filepath.Join(TempDir, FileNameGitIgnore))
 }
 
-func checkConfigPath(path *string, configsDirPath string) error {
-	var configPath, configPathDir string
-	var err error
-
-	if path == nil {
-		DealErr(request.DownloadAllFiles(), true) // 下载所有配置文件到临时目录
-
-		configPath, configPathDir = filepath.Join(TempDir, FileNameConfig), TempDir
-	} else {
-		configPath, err = PathAbs(*path)
-		if err != nil {
-			return err
-		}
-		configPathDir = filepath.Dir(configPath)
-	}
-
-	config.PathDir = configPathDir
-	config.ParseConfigFile(configPath)
-
-	return CopyFileTo(configsDirPath, configPath)
-}
-
 func checkConfigContent(configsDirPath string, projType string) error {
 	var shouldDownloadFile []string
-	var dirPath, templatePath string
+	var templatePath string
 	var err error
-
-	// dir 文件
-	if config.Config.DirPath == nil {
-		if !request.DownloadedFile[RemoteURLDir] {
-			Log("dir config file not found")
-			shouldDownloadFile = append(shouldDownloadFile, FileNameDir)
-		}
-
-		dirPath = filepath.Join(TempDir, FileNameDir)
-	} else {
-		dirPath = *config.Config.DirPath
-
-		if !filepath.IsAbs(dirPath) {
-			dirPath = filepath.Join(config.PathDir, dirPath)
-		}
-
-		exists, err := PathExists(dirPath)
-		if err != nil {
-			return err
-		}
-
-		if !exists {
-			return fmt.Errorf("file not find in %q", dirPath)
-		}
-	}
 
 	// main 目标文件
 	if config.Config.MainFileTempPath == nil {
-
 		if !request.DownloadedFile[RemoteURLMainFileTemplate] {
 			Log("main file template not found")
 			shouldDownloadFile = append(shouldDownloadFile, FileNameMainFileTemplate)
@@ -231,7 +188,7 @@ func checkConfigContent(configsDirPath string, projType string) error {
 		templatePath = *config.Config.MainFileTempPath
 
 		if !filepath.IsAbs(templatePath) {
-			templatePath = filepath.Join(config.PathDir, templatePath)
+			templatePath = filepath.Join(TempDir, templatePath)
 		}
 
 		exists, err := PathExists(templatePath)
@@ -267,14 +224,13 @@ func checkConfigContent(configsDirPath string, projType string) error {
 		Log(fmt.Sprintf("file %q download success~", shouldDownloadFile))
 	}
 
-	config.ParseConfigContentDirs(dirPath, projType)
-	err = CopyFileTo(configsDirPath, dirPath)
+	config.MainFileTemplatePath = templatePath
+	err = CopyFileTo(configsDirPath, templatePath)
 	if err != nil {
 		return err
 	}
 
-	config.MainFileTemplatePath = templatePath
-	err = CopyFileTo(configsDirPath, templatePath)
+	err = CopyFileTo(configsDirPath, filepath.Join(TempDir, FileNameGitIgnore))
 	if err != nil {
 		return err
 	}

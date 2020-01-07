@@ -1,7 +1,7 @@
 {
-  "default": ["bin","build/package","build/ci","cmd","configs","scripts","init","deplyments","internal/api","internal/config","internal/handle","internal/schema","internal/service","internal/model","internal/utils","pkg/middleware","pkg/model"],
+  "default": ["bin","build/package","build/ci","cmd","configs","scripts","init","deployments","internal/api","internal/config","internal/handle","internal/schema","internal/service","internal/model","internal/utils","pkg/middleware","pkg/model"],
 
-  "tool":["bin","build/package","build/ci","cmd","configs","scripts","init","deplyments","internal/config","internal/handle","internal/utils","pkg/middleware","pkg/model"],
+  "tool":["bin","build/package","build/ci","cmd","configs","scripts","init","deployments","internal/config","internal/handle","internal/utils","pkg/middleware","pkg/model"],
 
-  "empty":["bin","build/package","build/ci","configs","scripts","init","deplyments"]
+  "empty":["bin","build/package","build/ci","configs","scripts","init","deployments"]
 }

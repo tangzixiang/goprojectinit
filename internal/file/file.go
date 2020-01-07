@@ -26,7 +26,6 @@ func WriteMainFileWithTemp(fileNames []string, projType string, mainFileTemplate
 			writeCMDMainFile(fileName, mainFileTemplatePath)
 		}
 	}
-
 }
 
 func writeCMDMainFile(fileName string, mainFileTemplatePath string) {
