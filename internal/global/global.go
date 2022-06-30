@@ -8,8 +8,8 @@ import (
 const (
 	DirMode = os.ModeDir | os.ModePerm // 目录权限信息
 
-	RemoteURLMainFileTemplate = `https://raw.githubusercontent.com/tangzixiang/goprojectinit/master/configs/main-file.temp`
-	RemoteURLGitIgnore        = `https://raw.githubusercontent.com/tangzixiang/goprojectinit/master/configs/.gitignore`
+	RemoteURLMainFileTemplate = `https://raw.githubusercontents.com/tangzixiang/goprojectinit/master/configs/main-file.temp`
+	RemoteURLGitIgnore        = `https://raw.githubusercontents.com/tangzixiang/goprojectinit/master/configs/.gitignore`
 
 	FileNameMainFileTemplate = `main-file.temp`
 	FileNameGitIgnore        = `.gitignore`
